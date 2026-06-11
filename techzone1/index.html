@@ -1,21 +1,129 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<title>TechZone</title>
-<link rel="stylesheet" href="estilos.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechZone - E-Commerce Corporativo</title>
+  <link rel="stylesheet" href="css/estilos.css">
+  <script src="js/db.js"></script>
+  <script src="js/main.js"></script>
 </head>
 <body>
 <header>
-<h1>TechZone</h1>
-<nav>
-<a href="index.html">Inicio</a>
-<a href="tienda.php">Tienda</a>
-<a href="login.php">Login</a>
-</nav>
+  <a href="index.html" class="brand">Tech<span>Zone</span></a>
+  <nav aria-label="Menú Principal" id="main-nav" data-active="inicio">
+    <!-- Carga dinámica por main.js -->
+  </nav>
 </header>
-<div class="hero">
-<h2>Bienvenido a TechZone</h2>
-<p>Los mejores productos tecnologicos</p>
-</div>
+
+<main class="container">
+  <section class="card" style="background: linear-gradient(135deg, rgba(37,99,235,0.1) 0%, rgba(17,17,24,0.9) 100%); text-align:center; padding: 4rem 2rem;">
+    <h1>TechZone Corporación</h1>
+    <p class="muted" style="max-width:800px; margin: 1rem auto 2rem auto;">
+        Líderes en integración de ecosistemas avanzados para SimRacing y hardware informático de alta fidelidad.
+    </p>
+    
+    <div class="corp-grid">
+        <div class="corp-item">
+            <h3>Misión</h3>
+            <p class="muted">Proveer periféricos de simulación que optimicen el rendimiento de los pilotos virtuales locales.</p>
+        </div>
+        <div class="corp-item">
+            <h3>Visión</h3>
+            <p class="muted">Ser la tienda e-commerce de referencia tecnológica en el país, reconocida por nuestra robustez.</p>
+        </div>
+        <div class="corp-item">
+            <h3>Valores</h3>
+            <p class="muted">Innovación continua, precisión técnica, responsabilidad transaccional y accesibilidad.</p>
+        </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>🎯 Recursos Multimedia de la Empresa</h2>
+    <div class="media-grid">
+        <div class="media-box">
+            <h3>Video Institucional</h3>
+            <video controls aria-label="Video promocional">
+                <source src="video/promocion.mp4" type="video/mp4">
+            </video>
+        </div>
+        <div class="media-box">
+            <h3>Audio Guía</h3>
+            <audio controls aria-label="Audio guía corporativo">
+                <source src="audio/guia_corporativa.mp3" type="audio/mpeg">
+            </audio>
+        </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 style="margin-bottom:1.5rem;">🛒 Catálogo de Hardware Premium</h2>
+    <div class="grid" id="featured-products-grid">
+      <!-- Carga dinámica -->
+    </div>
+  </section>
+</main>
+
+<footer>
+    <p>&copy; 2026 TechZone SRL. Todos los derechos reservados.</p>
+    <p>Santiago de los Caballeros, República Dominicana | Tel: (809) 555-0199</p>
+    <div class="footer-links">
+        <a href="index.html">Inicio</a>
+        <a href="contacto.html">Contacto y Soporte</a>
+        <a href="registro.html">Registro</a>
+    </div>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const grid = document.getElementById('featured-products-grid');
+        if (grid && window.db) {
+            // Mostrar los primeros 6 productos más recientes
+            const products = window.db.getProducts().slice(0, 6);
+            
+            function getProductImage(nombre, imagen) {
+                const mapa = {
+                    'laptop': 'laptop.jpg', 'mouse': 'mouse.jpg', 'teclado': 'teclado.png',
+                    'monitor': 'monitor.jpg', 'cockpit': 'cockpit.jpg', 'volante': 'volante.png'
+                };
+                const imgName = (imagen || '').trim();
+                if (imgName !== '') return imgName;
+                const clave = (nombre || '').toLowerCase().trim();
+                for (let k in mapa) {
+                    if (clave.includes(k)) return mapa[k];
+                }
+                return 'monitor.jpg';
+            }
+
+            if (products.length === 0) {
+                grid.innerHTML = '<p class="muted">No hay productos disponibles.</p>';
+                return;
+            }
+
+            grid.innerHTML = products.map(p => `
+                <a href="producto.html?id=${p.id}" class="product-card" aria-label="Ver ${p.nombre}">
+                  <div>
+                    <img class="producto-img" src="img/${encodeURIComponent(getProductImage(p.nombre, p.imagen))}" alt="Fotografía de ${p.nombre}">
+                    <h3>${escapeHtml(p.nombre)}</h3>
+                  </div>
+                  <div style="margin-top: 1rem;">
+                    <p style="margin-bottom:1rem;"><strong style="color: var(--success); font-size:1.3rem;">$${p.precio.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></p>
+                    <span class="btn-action" style="display:block;">Ver Ficha Técnica</span>
+                  </div>
+                </a>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    });
+</script>
 </body>
 </html>

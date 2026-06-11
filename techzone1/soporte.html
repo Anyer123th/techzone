@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soporte Técnico - TechZone</title>
+  <link rel="stylesheet" href="css/estilos.css">
+  <script src="js/db.js"></script>
+  <script src="js/main.js"></script>
+</head>
+<body data-require-auth="true">
+<header>
+  <a href="index.html" class="brand">Tech<span>Zone</span></a>
+  <nav id="main-nav">
+    <a href="index.html">Inicio</a>
+    <a href="dashboard.html">Mi Panel</a>
+  </nav>
+</header>
+
+<main class="container">
+  <div class="card" style="max-width: 650px; margin: 0 auto;">
+    <h1>Formulario de Registro 3: Reporte de Incidencias</h1>
+    <p class="muted">Si tu hardware presenta anomalías mecánicas o de calibración, genera un ticket inmediato.</p>
+    
+    <div id="status-container"></div>
+
+    <form id="soporte-form">
+      <div class="form-group">
+        <label for="asunto">Asunto Breve del Fallo:</label>
+        <input type="text" id="asunto" name="asunto" required minlength="5" placeholder="Ej: Holgura en eje central">
+      </div>
+      <div class="form-group">
+        <label for="mensaje">Explicación Pormenorizada de los Síntomas:</label>
+        <textarea id="mensaje" name="mensaje" rows="5" required minlength="15" placeholder="Indica detalladamente los síntomas observados..."></textarea>
+      </div>
+      <button type="submit" id="boton">Enviar Ticket a Revisión Técnica</button>
+    </form>
+  </div>
+</main>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!window.db) return;
+        const user = window.db.getCurrentUser();
+        const form = document.getElementById('soporte-form');
+        const statusContainer = document.getElementById('status-container');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const asunto = document.getElementById('asunto').value.trim();
+            const mensaje = document.getElementById('mensaje').value.trim();
+
+            if (asunto === "" || mensaje === "") {
+                statusContainer.innerHTML = `<p style="color: var(--danger); font-weight:bold; margin: 1rem 0;">Error: Todos los campos del formulario son requeridos.</p>`;
+                return;
+            }
+
+            if (asunto.length < 5) {
+                statusContainer.innerHTML = `<p style="color: var(--danger); font-weight:bold; margin: 1rem 0;">Error: El asunto debe ser más descriptivo (mínimo 5 caracteres).</p>`;
+                return;
+            }
+
+            if (mensaje.length < 15) {
+                statusContainer.innerHTML = `<p style="color: var(--danger); font-weight:bold; margin: 1rem 0;">Error: La explicación debe tener al menos 15 caracteres.</p>`;
+                return;
+            }
+
+            if (user) {
+                window.db.addTicket(user.usuario, asunto, mensaje);
+                statusContainer.innerHTML = `<p style="color: var(--success); font-weight:bold; margin: 1rem 0;">Éxito: Su reporte de incidencia ha sido inyectado en la base de datos.</p>`;
+                form.reset();
+            }
+        });
+    });
+</script>
+</body>
+</html>

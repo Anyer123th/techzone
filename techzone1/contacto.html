@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contacto - TechZone</title>
+  <link rel="stylesheet" href="css/estilos.css">
+  <script src="js/db.js"></script>
+  <script src="js/main.js"></script>
+</head>
+<body>
+<header>
+  <a href="index.html" class="brand">Tech<span>Zone</span></a>
+  <nav id="main-nav" data-active="contacto">
+    <!-- Carga dinámica -->
+  </nav>
+</header>
+
+<main class="container">
+  <div class="card" style="max-width: 650px; margin: 0 auto;">
+    <h1>Área de Contacto Corporativo</h1>
+    <p class="muted">Envíanos tus dudas comerciales o solicitudes de soporte directamente al servidor. (849)-340-1009</p>
+    
+    <div id="status-container"></div>
+
+    <form id="contacto-form">
+      <div id="guest-field-container">
+          <div class="form-group">
+              <label for="nombre_invitado">Tu Nombre Completo:</label>
+              <input type="text" id="nombre_invitado" name="nombre_invitado" required placeholder="Ej: Anyer Peralta">
+          </div>
+      </div>
+      <div class="form-group">
+        <label for="asunto">Asunto del Mensaje:</label>
+        <input type="text" id="asunto" name="asunto" required placeholder="Ej: Consulta sobre disponibilidad de Volantes">
+      </div>
+      <div class="form-group">
+        <label for="mensaje">Cuerpo del Mensaje / Comentario:</label>
+        <textarea id="mensaje" name="mensaje" rows="5" required placeholder="Escribe aquí tu duda..."></textarea>
+      </div>
+      <button id="boton" type="submit">Enviar Mensaje de Contacto</button>
+    </form>
+  </div>
+</main>
+
+<footer>
+    <p>&copy; 2026 TechZone SRL. Todos los derechos reservados.</p>
+    <div class="footer-links">
+        <a href="index.html">Inicio</a>
+        <a href="contacto.html">Contacto</a>
+    </div>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!window.db) return;
+        const user = window.db.getCurrentUser();
+        const guestContainer = document.getElementById('guest-field-container');
+        const form = document.getElementById('contacto-form');
+        const statusContainer = document.getElementById('status-container');
+
+        if (user) {
+            // Si el usuario está registrado, ocultamos el campo de nombre completo e invitamos como su usuario
+            guestContainer.innerHTML = '';
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const cliente = user ? user.usuario : document.getElementById('nombre_invitado').value.trim();
+            const asunto = document.getElementById('asunto').value.trim();
+            const mensaje = document.getElementById('mensaje').value.trim();
+
+            if (asunto !== "" && mensaje !== "") {
+                window.db.addTicket(cliente, asunto, mensaje);
+                statusContainer.innerHTML = `<p class='status-msg' style='color: var(--accent); font-weight:bold; margin-bottom:1.5rem;'>Éxito: Su mensaje de contacto ha sido almacenado en la Base de Datos.</p>`;
+                form.reset();
+            } else {
+                statusContainer.innerHTML = `<p class='status-msg' style='color: var(--danger); font-weight:bold; margin-bottom:1.5rem;'>Por favor, complete todos los campos.</p>`;
+            }
+        });
+    });
+</script>
+</body>
+</html>

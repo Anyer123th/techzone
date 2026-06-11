@@ -1,0 +1,61 @@
+# netlify.toml - Configuración de redirecciones para Netlify
+
+[[redirects]]
+  from = "/index.php"
+  to = "/index.html"
+  status = 301
+
+[[redirects]]
+  from = "/tienda.php"
+  to = "/tienda.html"
+  status = 301
+
+[[redirects]]
+  from = "/producto.php"
+  to = "/producto.html"
+  status = 301
+
+[[redirects]]
+  from = "/comprar.php"
+  to = "/comprar.html"
+  status = 301
+
+[[redirects]]
+  from = "/login.php"
+  to = "/login.html"
+  status = 301
+
+[[redirects]]
+  from = "/registro.php"
+  to = "/registro.html"
+  status = 301
+
+[[redirects]]
+  from = "/dashboard.php"
+  to = "/dashboard.html"
+  status = 301
+
+[[redirects]]
+  from = "/admin.php"
+  to = "/admin.html"
+  status = 301
+
+[[redirects]]
+  from = "/contacto.php"
+  to = "/contacto.html"
+  status = 301
+
+[[redirects]]
+  from = "/soporte.php"
+  to = "/soporte.html"
+  status = 301
+
+[[redirects]]
+  from = "/perfil.php"
+  to = "/perfil.html"
+  status = 301
+
+[[redirects]]
+  from = "/recuperar.php"
+  to = "/recuperar.html"
+  status = 301

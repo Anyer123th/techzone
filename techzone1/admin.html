@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Base de Datos - TechZone</title>
+  <link rel="stylesheet" href="css/estilos.css">
+  <script src="js/db.js"></script>
+  <script src="js/main.js"></script>
+</head>
+<body data-require-admin="true">
+<header>
+  <a href="index.html" class="brand">Tech<span>Zone</span> Admin</a>
+  <nav id="main-nav" data-active="admin">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="index.html">Ver Tienda</a>
+    <a href="contacto.html">Contacto</a>
+    <a href="#" id="logout-btn" style="color:var(--danger) !important;">Salir</a>
+  </nav>
+</header>
+
+<main class="container">
+  <div class="card">
+    <h2>Formulario de Registro 2: Inventario de Productos</h2>
+    <p class="muted">Añade componentes y hardware tecnológico directamente en las tablas del servidor local.</p>
+    <div id="admin-message"></div>
+
+    <form id="add-product-form">
+      <div class="form-group">
+        <label for="nombre">Nombre Comercial del Producto:</label>
+        <input type="text" id="nombre" name="nombre" required placeholder="Ej: Volante Direct Drive 12Nm">
+      </div>
+      <div class="form-group">
+        <label for="precio">Precio Unitario (USD):</label>
+        <input type="text" id="precio" name="precio" required placeholder="Ej: 549.99">
+      </div>
+      <div class="form-group">
+        <label for="descripcion">Descripción y Atributos Multimedia:</label>
+        <textarea id="descripcion" name="descripcion" rows="3" required placeholder="Detalles técnicos y compatibilidad..."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="imagen">Nombre del archivo de imagen (Opcional):</label>
+        <input type="text" id="imagen" name="imagen" placeholder="Ej: volante.png">
+      </div>
+      <button type="submit">Guardar Registro en Sistema</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Información Almacenada 1: Inventario (`productos`)</h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Nombre Comercial</th>
+            <th scope="col">Precio</th>
+            <th scope="col">Archivo Imagen</th>
+            <th scope="col">Acciones</th> 
+          </tr>
+        </thead>
+        <tbody id="products-table-body">
+          <!-- Carga dinámica -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Información Almacenada 2: Cuentas (`usuarios`)</h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Nombre de Usuario</th>
+            <th scope="col">Rol de Acceso</th>
+            <th scope="col">Fecha Registro</th>
+          </tr>
+        </thead>
+        <tbody id="users-table-body">
+          <!-- Carga dinámica -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Información Almacenada 3: Tickets de Soporte (`tickets_soporte`)</h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">ID Ticket</th>
+            <th scope="col">Cliente Remitente</th>
+            <th scope="col">Asunto del Reporte</th>
+            <th scope="col">Estampa de Tiempo</th>
+          </tr>
+        </thead>
+        <tbody id="tickets-table-body">
+          <!-- Carga dinámica -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!window.db) return;
+
+        const messageEl = document.getElementById('admin-message');
+        const productsBody = document.getElementById('products-table-body');
+        const usersBody = document.getElementById('users-table-body');
+        const ticketsBody = document.getElementById('tickets-table-body');
+        const addForm = document.getElementById('add-product-form');
+
+        function showStatus(msg, isError = false) {
+            messageEl.innerHTML = `<p style='color:${isError ? "var(--danger)" : "var(--success)"}; font-weight:bold; margin:1rem 0;'>${escapeHtml(msg)}</p>`;
+            setTimeout(() => { messageEl.innerHTML = ''; }, 6000);
+        }
+
+        function renderTables() {
+            // Render Products
+            const products = window.db.getProducts();
+            productsBody.innerHTML = products.map(p => `
+                <tr>
+                  <td>${p.id}</td>
+                  <td><strong>${escapeHtml(p.nombre)}</strong></td>
+                  <td>$${p.precio.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                  <td><code>${escapeHtml(p.imagen || "default.png")}</code></td>
+                  <td>
+                    <a href="#" class="delete-btn" data-id="${p.id}" style="color: var(--danger); font-weight: bold; text-decoration: none;">
+                       ❌ Eliminar
+                    </a>
+                  </td>
+                </tr>
+            `).join('');
+
+            // Add delete listeners
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const id = parseInt(btn.getAttribute('data-id'));
+                    if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+                        window.db.deleteProduct(id);
+                        showStatus('Éxito: Producto eliminado correctamente de la Base de Datos.');
+                        renderTables();
+                    }
+                });
+            });
+
+            // Render Users
+            const users = window.db.getUsers();
+            usersBody.innerHTML = users.map(u => `
+                <tr>
+                  <td>${u.id}</td>
+                  <td>${escapeHtml(u.usuario)}</td>
+                  <td><span class="badge" style="background:${u.rol === 'admin' ? 'rgba(59,130,246,0.15)' : 'rgba(16,185,129,0.15)'}; color:${u.rol === 'admin' ? '#3b82f6' : 'var(--success)'};">${escapeHtml(u.rol)}</span></td>
+                  <td>${u.fecha_registro}</td>
+                </tr>
+            `).join('');
+
+            // Render Tickets
+            const tickets = window.db.getTickets();
+            ticketsBody.innerHTML = tickets.map(t => `
+                <tr>
+                  <td>${t.id}</td>
+                  <td><strong>${escapeHtml(t.cliente)}</strong></td>
+                  <td>${escapeHtml(t.asunto)}</td>
+                  <td>${t.fecha_creacion}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Form Submit
+        addForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nombre = document.getElementById('nombre').value.trim();
+            const precioRaw = document.getElementById('precio').value.trim();
+            const descripcion = document.getElementById('descripcion').value.trim();
+            const imagen = document.getElementById('imagen').value.trim();
+
+            if (nombre === "" || precioRaw === "" || descripcion === "") {
+                showStatus('Error: Rellene todos los apartados obligatorios.', true);
+                return;
+            }
+
+            const precioNum = parseFloat(precioRaw);
+            if (isNaN(precioNum) || precioNum <= 0) {
+                showStatus('Error: El precio debe ser un número positivo válido.', true);
+                return;
+            }
+
+            window.db.addProduct(nombre, precioNum, descripcion, imagen);
+            showStatus('Éxito: Producto guardado e indexado correctamente.');
+            addForm.reset();
+            renderTables();
+        });
+
+        // Initial render
+        renderTables();
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    });
+</script>
+</body>
+</html>

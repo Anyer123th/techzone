@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Perfil - Tech Zone</title>
+  <link rel="stylesheet" href="css/estilos.css">
+  <script src="js/db.js"></script>
+  <script src="js/main.js"></script>
+</head>
+<body data-require-auth="true">
+<header>
+  <a href="dashboard.html" class="brand">Tech<span>Zone</span></a>
+  <nav id="main-nav">
+      <a href="dashboard.html">Mi Panel</a>
+      <a href="tienda.html">Tienda</a>
+      <a href="#" id="logout-link">Salir</a>
+  </nav>
+</header>
+
+<div class="container">
+  <div class="card">
+    <h2>Perfil</h2>
+    <p>Usuario: <strong id="perfil-username">Cargando...</strong></p>
+    <p>Rol: <span class="badge" id="perfil-rol">Cargando...</span></p>
+  </div>
+
+  <div class="card">
+    <h3>Cambiar contraseña</h3>
+    <div id="status-container"></div>
+    <form id="password-form">
+      <div style="margin:8px 0">
+        <input type="password" id="password1" name="password1" placeholder="Nueva contraseña" required>
+      </div>
+      <div style="margin:8px 0">
+        <input type="password" id="password2" name="password2" placeholder="Repetir contraseña" required>
+      </div>
+      <button type="submit">Guardar</button>
+    </form>
+  </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!window.db) return;
+        const user = window.db.getCurrentUser();
+        if (!user) return; // main.js se encarga de esto
+
+        document.getElementById('perfil-username').textContent = user.usuario;
+        document.getElementById('perfil-rol').textContent = user.rol;
+
+        // Logout link
+        document.getElementById('logout-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.db.logout();
+            window.location.href = 'index.html';
+        });
+
+        // Form Submit
+        const form = document.getElementById('password-form');
+        const statusEl = document.getElementById('status-container');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pass1 = document.getElementById('password1').value;
+            const pass2 = document.getElementById('password2').value;
+
+            if (pass1.length < 4) {
+                statusEl.innerHTML = `<p style="color:var(--danger); font-weight:bold; margin-bottom:1rem;">La nueva contraseña debe tener al menos 4 caracteres.</p>`;
+                return;
+            }
+
+            if (pass1 !== pass2) {
+                statusEl.innerHTML = `<p style="color:var(--danger); font-weight:bold; margin-bottom:1rem;">Las contraseñas no coinciden.</p>`;
+                return;
+            }
+
+            const success = window.db.updateUserPassword(user.id, pass1);
+            if (success) {
+                statusEl.innerHTML = `<p style="color:var(--success); font-weight:bold; margin-bottom:1rem;">Contraseña actualizada.</p>`;
+                form.reset();
+            } else {
+                statusEl.innerHTML = `<p style="color:var(--danger); font-weight:bold; margin-bottom:1rem;">Error operacional al cambiar la contraseña.</p>`;
+            }
+        });
+    });
+</script>
+</body>
+</html>

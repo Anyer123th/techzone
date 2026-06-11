@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compra Confirmada - TechZone</title>
+  <link rel="stylesheet" href="css/estilos.css">
+  <script src="js/db.js"></script>
+  <script src="js/main.js"></script>
+</head>
+<body data-require-auth="true">
+<header>
+  <a href="tienda.html" class="brand">Tech<span>Zone</span></a>
+  <nav aria-label="Menú Principal" id="main-nav">
+    <!-- Carga dinámica -->
+  </nav>
+</header>
+
+<main class="container" id="comprar-container">
+  <!-- Carga dinámica -->
+</main>
+
+<footer>
+    <p>&copy; 2026 TechZone SRL. Todos los derechos reservados.</p>
+    <p>Santiago de los Caballeros, República Dominicana | Técnico en Informática</p>
+    <div class="footer-links">
+        <a href="tienda.html">Inicio / Tienda</a>
+        <a href="contacto.html">Contacto y Soporte</a>
+        <a href="dashboard.html">Mi Panel Privado</a>
+    </div>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = parseInt(urlParams.get('id') || '0');
+
+        if (!productId || !window.db) {
+            window.location.href = 'tienda.html';
+            return;
+        }
+
+        const product = window.db.getProductById(productId);
+        if (!product) {
+            window.location.href = 'tienda.html';
+            return;
+        }
+
+        const user = window.db.getCurrentUser();
+        if (!user) {
+            // main.js se encarga de redirigir, pero por si acaso:
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Ejecutar compra
+        window.db.addCompra(user.id, product.id);
+
+        const container = document.getElementById('comprar-container');
+        container.innerHTML = `
+          <div class="card" style="max-width: 550px; margin: 4rem auto; text-align: center; border-color: var(--success); box-shadow: 0 0 25px rgba(16,185,129,0.15);">
+            <div style="font-size: 3.5rem; margin-bottom: 1rem;">✅</div>
+            <h1 style="color: var(--success); margin-bottom: 0.5rem;">Transacción Completada</h1>
+            <p class="muted">Tu orden de hardware ha sido registrada e indexada correctamente en el servidor local.</p>
+            
+            <div style="background-color: var(--bg-input); border: 1px solid var(--border); padding: 1.5rem; border-radius: 8px; margin: 2rem 0; text-align: left;">
+                <h3 style="border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1rem; color: #3b82f6;">🧾 Resumen de Factura</h3>
+                <p style="margin-bottom: 0.5rem; color: var(--text-main);">Artículo: <strong>${escapeHtml(product.nombre)}</strong></p>
+                <p style="margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem;">Cliente ID del Servidor: <code>#${user.id}</code> (Usuario: ${escapeHtml(user.usuario)})</p>
+                <p style="margin-top: 1rem; font-size: 1.25rem; color: var(--success); font-weight: bold;">Monto Debitado: $${product.precio.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} USD</p>
+            </div>
+
+            <a href="tienda.html" class="btn-action" style="font-weight: 700; padding: 1rem; text-align: center; display: block;">Seguir Inspeccionando Catálogo</a>
+          </div>
+        `;
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    });
+</script>
+</body>
+</html>

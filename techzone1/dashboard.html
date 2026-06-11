@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Panel - TechZone</title>
+  <link rel="stylesheet" href="css/estilos.css">
+  <style>
+    /* Estilos UX exclusivos para el Dashboard interactivo */
+    .welcome-banner {
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(16, 16, 24, 0.9) 100%);
+        border: 1px solid rgba(37, 99, 235, 0.3);
+        box-shadow: 0 0 25px rgba(37, 99, 235, 0.1);
+    }
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+    .action-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: transform 0.2s, border-color 0.2s;
+        text-decoration: none;
+        color: inherit;
+    }
+    .action-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--accent);
+        background: rgba(37, 99, 235, 0.05);
+    }
+    .action-card h3 {
+        color: #ffffff;
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+    .action-card p {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+  </style>
+  <script src="js/db.js"></script>
+  <script src="js/main.js"></script>
+</head>
+<body data-require-auth="true">
+<header>
+  <a href="index.html" class="brand">Tech<span>Zone</span></a>
+  <nav aria-label="Menú Privado" id="main-nav" data-active="dashboard">
+    <!-- Carga dinámica -->
+  </nav>
+</header>
+
+<main class="container">
+  <section class="card welcome-banner">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="margin-bottom: 0.5rem;" id="welcome-message">Bienvenido de vuelta 👋</h1>
+            <p class="muted">Has ingresado correctamente al entorno corporativo de simulación y hardware local.</p>
+        </div>
+        <div>
+            <span class="badge" style="font-size: 0.9rem; padding: 0.5rem 1rem;" id="role-badge">
+                Rol: Cargando...
+            </span>
+        </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="actions-heading">
+    <h2 id="actions-heading" style="font-size: 1.4rem; margin-bottom: 1rem;">🎛️ Panel de Accesos Directos</h2>
+    <div class="quick-actions" id="actions-grid">
+        
+        <a href="tienda.html" class="action-card" aria-label="Ir al catálogo de productos">
+            <h3>🛒 Explorar Tienda</h3>
+            <p>Inspecciona componentes multimedia y hardware en stock.</p>
+        </a>
+
+        <a href="contacto.html" class="action-card" aria-label="Ir al formulario de contacto y soporte">
+            <h3>📩 Centro de Contacto</h3>
+            <p>Envía dudas o reportes directamente al servidor local.</p>
+        </a>
+
+        <!-- Se rellenará dinámicamente si es admin -->
+        <span id="admin-action-container" style="display: contents;"></span>
+
+        <a href="#" class="action-card" style="border-color: rgba(239, 68, 68, 0.2);" id="dashboard-logout-btn" aria-label="Cerrar sesión segura">
+            <h3 style="color: var(--danger);">🔒 Cerrar Sesión</h3>
+            <p>Termina tu estado de sesión de forma segura en este navegador.</p>
+        </a>
+
+    </div>
+  </section>
+
+  <section class="card" style="margin-top: 3rem;" aria-labelledby="history-heading">
+    <h2 id="history-heading" style="font-size: 1.4rem; margin-bottom: 1rem;">📦 Mis Compras de Hardware</h2>
+    <p class="muted" style="margin-bottom: 1.5rem;">Aquí se muestran los componentes de simulación que has comprado en esta sesión local.</p>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Factura ID</th>
+                    <th scope="col">Hardware</th>
+                    <th scope="col">Precio Debitado</th>
+                    <th scope="col">Fecha y Hora de Adquisición</th>
+                </tr>
+            </thead>
+            <tbody id="purchases-table-body">
+                <!-- Carga dinámica -->
+            </tbody>
+        </table>
+    </div>
+  </section>
+</main>
+
+<footer>
+    <p>&copy; 2026 TechZone SRL. Todos los derechos reservados.</p>
+    <p>Santiago de los Caballeros, República Dominicana | Módulo de Informática</p>
+    <div class="footer-links">
+        <a href="index.html">Inicio</a>
+        <a href="contacto.html">Contacto y Soporte</a>
+        <a href="dashboard.html">Mi Panel</a>
+    </div>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!window.db) return;
+
+        const user = window.db.getCurrentUser();
+        if (!user) return; // main.js redirigirá si es necesario
+
+        // Rellenar datos de usuario
+        document.getElementById('welcome-message').textContent = `Bienvenido de vuelta, ${user.usuario} 👋`;
+        document.getElementById('role-badge').textContent = `Rol: ${user.rol}`;
+
+        // Mostrar enlace de admin si aplica
+        if (user.rol === 'admin') {
+            const adminContainer = document.getElementById('admin-action-container');
+            adminContainer.innerHTML = `
+                <a href="admin.html" class="action-card" style="border-color: rgba(37, 99, 235, 0.4);" aria-label="Ir al panel de administración">
+                    <h3 style="color: #3b82f6;">⚙️ Base de Datos</h3>
+                    <p>Monitorea y lee las 3 tablas relacionales de MySQL sin phpMyAdmin.</p>
+                </a>
+            `;
+        }
+
+        // Listener para cerrar sesión
+        document.getElementById('dashboard-logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.db.logout();
+            window.location.href = 'index.html';
+        });
+
+        // Rellenar tabla de compras
+        const purchasesBody = document.getElementById('purchases-table-body');
+        const purchases = window.db.getCompras(user.id);
+
+        if (purchases.length === 0) {
+            purchasesBody.innerHTML = `
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 2rem;">No has realizado ninguna compra todavía. ¡Visita la tienda!</td>
+                </tr>
+            `;
+        } else {
+            purchasesBody.innerHTML = purchases.map(c => `
+                <tr>
+                    <td><code>#TX-${c.id}</code></td>
+                    <td><strong>${escapeHtml(c.producto_nombre)}</strong></td>
+                    <td style="color: var(--success); font-weight: bold;">$${c.producto_precio.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} USD</td>
+                    <td>${c.fecha}</td>
+                </tr>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    });
+</script>
+</body>
+</html>
